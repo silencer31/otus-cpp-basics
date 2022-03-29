@@ -1,0 +1,1 @@
+This repository contains completed home tasks for Otus C++ Basic course.
