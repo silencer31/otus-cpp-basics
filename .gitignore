@@ -1,0 +1,4 @@
+# We will ignore build folder
+02_HomeWork/.vs/
+02_HomeWork/build/
+02_HomeWork/out/
