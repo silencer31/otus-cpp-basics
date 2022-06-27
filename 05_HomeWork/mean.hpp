@@ -5,18 +5,17 @@
 // Арифметическое среднее.
 class Mean : public IStatistics {
 public:
-	Mean() : mean_value{ 0 }, sum{ 0 }, total_number{ 0 } {
+	Mean() : sum{ 0 }, total_number{ 0 } {
 
 	}
 
 	void update(double next) override {
 		sum += next;
 		++total_number;
-		mean_value = sum / total_number;
 	}
 
 	double eval() const override {
-		return mean_value;
+		return sum / total_number;
 	}
 
 	const char* name() const override {
@@ -24,7 +23,6 @@ public:
 	}
 
 private:
-	double mean_value;
 	double sum;
 	int total_number;
 };
