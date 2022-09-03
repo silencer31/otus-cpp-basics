@@ -154,6 +154,10 @@ public:
 	// Очистка всего контейнера.
 	void clear() {
 		if (data_ptr != nullptr) {
+			for (size_t i = 0; i < total_number; ++i) {
+				data_ptr[i].~T(); // Вызов деструктора для каждого элемента.
+			}
+
 			delete[] data_ptr;
 			data_ptr = nullptr;
 		}
@@ -196,26 +200,6 @@ public:
 		capacity = new_cap;
 	}
 
-	// Добавить новый элемент в контейнер.
-	void push_back(const T& value) {
-		if (total_number == capacity) { // Все свободные ячейки уже заняты.
-			size_t new_capacity = (capacity == 0) ? 4 : static_cast<size_t>(capacity * 1.6);
-			reserve(new_capacity);
-		}
-
-		data_ptr[total_number] = value;
-		++total_number;
-	}
-
-	// Удалить последний элемент из контейнера.
-	void pop_back() {
-		if (total_number == 0) return;
-	
-		--total_number;
-
-		return;
-	}
-
 	// Вставить новый элемент в контейнер в указанную позицию.
 	bool insert(const size_t& place, const T& value) {
 		// Вставлять можно только до или сразу после последнего элемента. Нельзя вставлять через пустые места.
@@ -234,8 +218,8 @@ public:
 
 		// Все элементы, следующие от указанной позиции, сдвигаем на 1 ближе к концу.
 		size_t i = total_number;
-		while( i != 0) {
-			data_ptr[i] = data_ptr[i-1];
+		while (i != 0) {
+			data_ptr[i] = data_ptr[i - 1];
 			--i;
 			if (i == place) {
 				break;
@@ -253,12 +237,14 @@ public:
 		if (place >= total_number) return false; // Выход за пределы.
 
 		if (total_number == 1) {
+			data_ptr[0].~T();
 			total_number = 0;
 			return true;
 		}
 
 		// Все элементы, следующие сразу за указанной позицией, сдвигаем на 1 ближе к началу.
 		for (size_t i = place; i < (total_number - 1); ++i) {
+			data_ptr[i].~T();
 			data_ptr[i] = data_ptr[i + 1];
 		}
 
@@ -266,6 +252,35 @@ public:
 
 		return true;
 	}
+
+	// Добавить новый элемент в конец контейнера.
+	void push_back(const T& value) {
+		if (total_number == capacity) { // Все свободные ячейки уже заняты.
+			size_t new_capacity = (capacity == 0) ? 4 : static_cast<size_t>(capacity * 1.6);
+			reserve(new_capacity);
+		}
+
+		data_ptr[total_number] = value;
+		++total_number;
+	}
+
+	// Удалить последний элемент из контейнера.
+	void pop_back() {
+		if (total_number == 0) return;
+		data_ptr[total_number - 1].~T();
+		--total_number;
+	}
+
+	// Добавить новый элемент в начало контейнера.
+	bool push_front(const T& value) {
+		return insert(0, value);
+	}
+	
+	// Удалить первый элемент из контейнера.
+	bool pop_front() {
+		return erase(0);
+	}
+
 
 	Iterator begin() const {
 		return Iterator(&data_ptr[0]);

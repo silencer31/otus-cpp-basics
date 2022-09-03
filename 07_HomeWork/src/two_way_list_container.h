@@ -127,7 +127,7 @@ public:
 				else {
 					twn_ptr_new->prev_node = last_node_ptr;
 					last_node_ptr->next_node = twn_ptr_new;
-					last_node_ptr = twn_ptr;
+					last_node_ptr = twn_ptr_new;
 				}
 
 				twn_ptr_to_copy = twn_ptr_to_copy->next_node;
@@ -163,16 +163,16 @@ public:
 		return current_node_ptr->data;
 	}
 
-	// Получение доступа по индексу. Выход за пределы не проверяется.
+	// Константный метод. Получение доступа по индексу. Выход за пределы не проверяется.
 	const T& operator[](const size_t& place) const {
 		TwoWayNode* current_node_ptr = get_node_by_place(place);
 
 		return current_node_ptr->data;
 	}
-
+	
 	// Получение доступа по индексу с контролем выхода за пределы.
 	T& at(const size_t& place) {
-		if (place >= total_number) throw std::out_of_range;
+		if (place >= total_number) throw std::out_of_range("Bad index");
 
 		TwoWayNode* current_node_ptr = get_node_by_place(place);
 
@@ -181,7 +181,7 @@ public:
 
 	// Константный метод. Получение доступа по индексу с контролем выхода за пределы.
 	const T& at(const size_t& place) const {
-		if (place >= total_number) throw std::out_of_range;
+		if (place >= total_number) throw std::out_of_range("Bad index");
 
 		TwoWayNode* current_node_ptr = get_node_by_place(place);
 
@@ -222,24 +222,7 @@ public:
 	size_t get_number() const { return total_number; }
 
 	// Узнать, пустой ли контейнер.
-	bool empty() const { return (total_number == 0); }
-
-	// Добавить новый элемент в конец контейнера.
-	void push_back(const T& value) {
-		TwoWayNode* twn_ptr = new TwoWayNode(value);
-		
-		if (first_node_ptr == nullptr) {
-			first_node_ptr = twn_ptr;
-			last_node_ptr = twn_ptr;
-		}
-		else {
-			twn_ptr->prev_node = last_node_ptr;
-			last_node_ptr->next_node = twn_ptr;
-			last_node_ptr = twn_ptr;
-		}
-
-		++total_number;
-	}
+	bool empty() const { return (first_node_ptr == nullptr); }
 
 	// Вставить новый элемент в контейнер в указанную позицию.
 	bool insert(const size_t& place, const T& value) {
@@ -295,7 +278,7 @@ public:
 		while (i != place) {
 			prev_node_ptr = current_node_ptr;
 			current_node_ptr = current_node_ptr->next_node;
-			
+
 			if (current_node_ptr == nullptr) {
 				return false; // Такой ситуации не должно быть.
 			}
@@ -334,6 +317,38 @@ public:
 		--total_number;
 
 		return true;
+	}
+
+	// Добавить новый элемент в конец контейнера.
+	void push_back(const T& value) {
+		TwoWayNode* twn_ptr = new TwoWayNode(value);
+		
+		if (first_node_ptr == nullptr) {
+			first_node_ptr = twn_ptr;
+			last_node_ptr = twn_ptr;
+		}
+		else {
+			twn_ptr->prev_node = last_node_ptr;
+			last_node_ptr->next_node = twn_ptr;
+			last_node_ptr = twn_ptr;
+		}
+
+		++total_number;
+	}
+
+	// Удалить последний элемент из контейнера.
+	bool pop_back() {
+		return erase(total_number - 1);
+	}
+	
+	// Добавление в начало.
+	bool push_front(const T& value) {
+		return insert(0, value);
+	}
+
+	// Удалить из начала.
+	bool pop_front() {
+		return erase(0);
 	}
 
 	Iterator begin() const {

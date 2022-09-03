@@ -1,16 +1,16 @@
 #include "serial_container.h"
+#include "test_class.h"
 
 #include <gtest/gtest.h>
 #include <exception>
 #include <stdexcept>
-#include <vector>
 
 // Тест создания контейнера.
 TEST(SerialContainer, CreateContainer) {
     // Arrange
     SerialContainer<int> scont(5);
 
-    // Act (empty for this test)
+    // Act 
     int *data_ptr = nullptr;
     data_ptr = scont.get_data();
 
@@ -23,7 +23,7 @@ TEST(SerialContainer, PushBack) {
     // Arrange
     SerialContainer<int> scont;
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(2);
     scont.push_back(13);
     scont.push_back(-1);
@@ -41,11 +41,11 @@ TEST(SerialContainer, PushFront) {
     // Arrange
     SerialContainer<int> scont(3);
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(2);
-    scont.insert(0, 89);
-    scont.insert(0, 135);
-    scont.insert(0, -9);
+    scont.push_front(89);
+    scont.push_front(135);
+    scont.push_front(-9);
 
     // Assert
     ASSERT_TRUE(scont.get_number() == 4);
@@ -60,7 +60,7 @@ TEST(SerialContainer, InsertInTheMiddle) {
     // Arrange
     SerialContainer<int> scont(4);
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(1);
     scont.push_back(3);
     scont.push_back(4);
@@ -79,13 +79,13 @@ TEST(SerialContainer, DeleteLast) {
     // Arrange
     SerialContainer<int> scont(3);
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(8732);
     scont.push_back(149);
     scont.push_back(-45);
 
-    scont.erase(scont.get_number() - 1);
-    scont.erase(scont.get_number() - 1);
+    scont.pop_back();
+    scont.pop_back();
 
     // Assert
     ASSERT_TRUE(scont.get_number() == 1);
@@ -97,13 +97,13 @@ TEST(SerialContainer, DeleteFirst) {
     // Arrange
     SerialContainer<int> scont(3);
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(8732);
     scont.push_back(149);
     scont.push_back(-45);
 
-    scont.erase( 0 );
-    scont.erase( 0 );
+    scont.pop_front();
+    scont.pop_front();
 
     // Assert
     ASSERT_TRUE(scont.get_number() == 1);
@@ -115,7 +115,7 @@ TEST(SerialContainer, DeleteFromTheMiddle) {
     // Arrange
     SerialContainer<int> scont(3);
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(8732);
     scont.push_back(149);
     scont.push_back(-45);
@@ -133,7 +133,7 @@ TEST(SerialContainer, CheckRange) {
     // Arrange
     SerialContainer<int> scont(4);
 
-    // Act (empty for this test)
+    // Act 
     scont.push_back(8732);
     scont.push_back(149);
     scont.push_back(-45);
@@ -143,41 +143,73 @@ TEST(SerialContainer, CheckRange) {
     ASSERT_EQ( scont.get_number(), 2);
     EXPECT_THROW( scont.at(3)=3, std::out_of_range);
 }
-/*
-TEST(List, PushBack) {
+
+// Проверка копирования одного контейнера в другой. 
+TEST(SerialContainer, CopyContainer) {
     // Arrange
-    const size_t count = 10;
-    otus::List<size_t> list;
-
-    // Act
-    for (size_t i = 0; i < count; ++i) {
-        list.push_back(i);
-    }
-
-    // Assert
-    ASSERT_EQ(list.size(), count);
-    ASSERT_FALSE(list.empty());
-}
-
-TEST(Lst, PopBack) {
-    // Arrange 
-    const size_t count = 10;
-    otus::List<size_t> list;
-
-    for (size_t i = 0; i < count; ++i) {
-        list.push_back(i);
+    SerialContainer<int> scont_one(7);
+    for (int i = 0; i < 7; ++i) {
+        scont_one.push_back(i+i);
     }
 
     // Act
-    for (size_t i = 0; i < count; ++i) {
-        list.pop_back();
+    SerialContainer<int> scont_two(scont_one); // Конструктор копирования.
+
+    SerialContainer<int> scont_three;
+    scont_three = scont_one; // Оператор копирования.
+
+    // Assert.
+    for (int i = 0; i < 7; ++i) {
+        ASSERT_EQ(scont_one[i], scont_two[i]);
+        ASSERT_EQ(scont_one[i], scont_three[i]);
+    }
+}
+
+// Проверка вызова деструктора при удалении элементов из контейнера. 
+TEST(SerialContainer, CheckDestructor) {
+    // Пришлось немного хитрую схему проверки составить.
+    
+    // Arrange
+    SerialContainer<TestClass> scont(1);
+    int* test_pp = nullptr;
+    
+    // Act
+    scont.push_back(TestClass(3));
+
+    scont[0].set_ptr_value(&test_pp);
+    scont[0].get_ptr_value();
+    
+    // Assert
+    ASSERT_TRUE(test_pp != nullptr);
+ 
+     // Act
+    scont.pop_back();
+ 
+    // Assert
+    ASSERT_TRUE( test_pp == nullptr);
+}
+
+// Проверка перемещения одного контейнера в другой. 
+TEST(SerialContainer, MoveContainer) {
+    // Arrange
+    SerialContainer<int> scont_one(7);
+    for (int i = 0; i < 7; ++i) {
+        scont_one.push_back(i + i);
     }
 
-    // Assert
-    ASSERT_EQ(list.size(), 0);
-    ASSERT_TRUE(list.empty());
+    // Act
+    SerialContainer<int> scont_two(std::move(scont_one)); // Конструктор перемещения.
+
+
+    // Assert.
+    ASSERT_EQ(scont_one.get_number(), 0);
+
+    ASSERT_EQ(scont_two.get_number(), 7);
+    for (int i = 0; i < 7; ++i) {
+        ASSERT_EQ(scont_two[i], i + i);
+    }
 }
-*/
+
 int main(int argc, char** argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
